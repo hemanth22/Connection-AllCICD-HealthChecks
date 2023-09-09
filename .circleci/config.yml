@@ -38,7 +38,6 @@ workflows:
   test_my_app:
     jobs:
       - build_and_test
-  nightly:
     triggers:
       - schedule:
           cron: "30 05 * * 0"
