@@ -1,0 +1,12 @@
+image: ubuntu
+
+test_script:
+- ls -ltrh
+- sudo apt-get update
+- sudo apt-get install python3-pip -y
+- pip3 install -r requirements.txt
+- python3 getDate.py
+- python3 getTimeConverter.py
+- python3 getTimers.py
+
+build: off
