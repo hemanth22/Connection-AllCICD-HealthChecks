@@ -1,0 +1,28 @@
+---
+- name: Deploy to Servers
+  hosts: localhost
+  gather_facts: no
+  vars:
+    environment_to_deploy: "PROD"  # Change this to "production" for production deployment
+  tasks:
+    - name: Read JSON file
+      slurp:
+        src: deploy.json
+      register: json_content
+
+    - name: Parse JSON content
+      set_fact:
+        server_info: "{{ (json_content['content'] | b64decode | from_json).environments[environment_to_deploy] }}"
+
+    - name: Deploy to servers
+      hosts: "{{ server_info | map(attribute='hostname') | list }}"
+      tasks:
+        - name: Copy files to the remote server
+          ansible.builtin.copy:
+            src: /path/to/local/files/
+            dest: "{{ server_info | selectattr('hostname', 'equalto', inventory_hostname) | map(attribute='deployment_directory') | first }}"
+
+        - name: Create a backup directory
+          ansible.builtin.file:
+            path: "{{ server_info | selectattr('hostname', 'equalto', inventory_hostname) | map(attribute='backup_directory') | first }}"
+            state: directory
