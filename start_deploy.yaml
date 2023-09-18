@@ -1,0 +1,21 @@
+---
+- name: start deployment
+  hosts: "{{ server_info | map(attribute='hostname') | list }}"
+  become: true
+  become_user: vagrant
+  gather_facts: false
+  tasks:
+    - name: Clone Git Repository
+      ansible.builtin.git:
+        repo: "https://github.com/hemanth22/Connection-AllCICD-HealthChecks.git"
+        dest: "/home/vagrant/deploy"
+        
+    - name: Copy files to the remote server
+      ansible.builtin.copy:
+        src: "/home/vagrant/deploy"
+        dest: "{{ server_info | selectattr('hostname', 'equalto', inventory_hostname) | map(attribute='deployment_directory') | first }}"
+
+    - name: Create a backup directory
+      ansible.builtin.file:
+        path: "{{ server_info | selectattr('hostname', 'equalto', inventory_hostname) | map(attribute='backup_directory') | first }}"
+        state: directory
